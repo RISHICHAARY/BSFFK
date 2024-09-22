@@ -1,97 +1,57 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { MultiSelect } from "react-multi-select-component";
+import Axios from "axios";
+
+const options = [
+  { label: "Number", value: "Number" },
+  { label: "Alphabet", value: "Alphabet" },
+  { label: "Higest lowercase aplhabet", value: "Higest lowercase aplhabet" },
+];
 
 const App = () => {
-  const [jsonInput, setJsonInput] = useState('');
-  const [responseData, setResponseData] = useState({});
-  const [filterOptions, setFilterOptions] = useState([]);
-  const [filteredResponse, setFilteredResponse] = useState('');
+  
+  const [apiUrl,setApiUrl] = useState("");
+  const [selected, setSelected] = useState([]);
+  const [numb,setNumb] = useState("");
+  const [alph,setAlph] = useState("");
+  const [hla,setHLA] = useState("");
 
-  const handleInputChange = (e) => {
-    setJsonInput(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('https://bfsbk.onrender.com/bfhl', JSON.parse(jsonInput));
-      setResponseData(response.data);
-    } catch (error) {
-      console.error("Error submitting data", error);
-    }
-  };
-
-  const handleFilterChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFilterOptions([...filterOptions, value]);
-    } else {
-      setFilterOptions(filterOptions.filter(option => option !== value));
-    }
-  };
-
-  const applyFilter = () => {
-    let result = '';
-    if (filterOptions.includes('Numbers')) {
-      result += `Numbers: ${responseData.numbers.join(", ")}`;
-    }
-    if (filterOptions.includes('Alphabets')) {
-      result +=  `Alphabets: ${responseData.alphabets.join(", ")}`;
-    }
-    if (filterOptions.includes('Highest Lowercase')) {
-      result +=  `Highest Lowercase Alphabet: ${responseData.highest_lowercase_alphabet.join(", ")}`;
-    }
-    setFilteredResponse(result);
-  };
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    Axios.post('https://bfsbk.onrender.com/bfhl',JSON.parse(apiUrl)).then((response)=>{
+      if (selected.includes("Number")){
+        setNumb(`Number: ${response.data.numbers}`)
+      }
+      if(selected.includes("Aplhabet")){
+        setAlph(`Alphabet: ${response.data.alphabets}`)
+      }
+      if(selected.includes("Higest lowercase aplhabet")){
+        setHLA(`Higest lowercase aplhabet: ${response.data.highest_lowercase_alphabet}`)
+      }
+    })
+  }
 
   return (
     <div>
-      <h1>API Input</h1>
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={jsonInput}
-          onChange={handleInputChange}
-          rows={4}
-          cols={50}
-          placeholder='Enter JSON input'
+      <form onSubmit={(event)=>{handleSubmit(event)}}>
+        <textarea onChange={(e)=>{setApiUrl(e.target.value)}} />
+        <MultiSelect
+          options={options}
+          value={selected}
+          onChange={setSelected}
+          labelledBy="Select"
         />
-        <button type="submit">Submit</button>
+        <button type="submit" value="Submit"/>
       </form>
-
-      {responseData && (
-        <>
-          <h2>Multi Filter</h2>
-          <label>
-            <input
-              type="checkbox"
-              value="Numbers"
-              onChange={handleFilterChange}
-            />
-            Numbers
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Alphabets"
-              onChange={handleFilterChange}
-            />
-            Alphabets
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              value="Highest Lowercase"
-              onChange={handleFilterChange}
-            />
-            Highest Lowercase Alphabet
-          </label>
-
-          <button onClick={applyFilter}>Apply Filter</button>
-
-          <h3>Filtered Response</h3>
-          <p>{filteredResponse}</p>
-        </>
-      )}
+      {
+        numb
+      }
+      {
+        alph
+      }
+      {
+        hla
+      }
     </div>
   );
 };
